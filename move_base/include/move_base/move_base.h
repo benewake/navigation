@@ -134,6 +134,7 @@ namespace move_base {
       bool makePlan(const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan);
 
       bool goal_reached(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res);
+      bool navi_diagnose_cb(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res);
       bool Goal_reached;
       /**
        * @brief  Load the recovery behaviors for the navigation stack from the parameter server
@@ -220,7 +221,8 @@ namespace move_base {
       pluginlib::ClassLoader<nav_core::BaseLocalPlanner> blp_loader_;
       pluginlib::ClassLoader<nav_core::RecoveryBehavior> recovery_loader_;
 
-      ros::ServiceServer service;
+      ros::ServiceServer goal_service;
+      ros::ServiceServer navi_diagnose;
       //set up plan triple buffer
       std::vector<geometry_msgs::PoseStamped>* planner_plan_;
       std::vector<geometry_msgs::PoseStamped>* latest_plan_;

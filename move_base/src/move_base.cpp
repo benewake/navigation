@@ -799,9 +799,9 @@ namespace move_base {
 
   bool MoveBase::goal_reached(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res)
   {
+    res.code = 0;
      static int i=0;
      i = i+1;
-    ROS_INFO("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %d", Goal_reached);
       res.IsError = IsError;
       res.GoalReach = Goal_reached;
       if(IsError == false && Goal_reached == true)
@@ -811,12 +811,13 @@ namespace move_base {
       if(IsError == true && Goal_reached == false) 
       {
         res.info ="Error! Goal will not be reached";
+	res.code = 1;
       }
       if(IsError == false && Goal_reached == false)
       {
          res.info="No Error, goal not have been reached";
       }
-      if(i >= 10)
+      if(i >= 7)
       {
       	Goal_reached = false;
         i = 0;

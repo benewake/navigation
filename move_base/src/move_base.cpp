@@ -145,7 +145,8 @@ namespace move_base {
     //advertise a service for getting a plan
     make_plan_srv_ = private_nh.advertiseService("make_plan", &MoveBase::planService, this);
 
-    service = nh.advertiseService("NaviStatus",&MoveBase::goal_reached,this);
+    goal_service = nh.advertiseService("goal_status",&MoveBase::goal_reached,this);
+    navi_diagnose = nh.advertiseService("navi_diagnose",&MoveBase::navi_diagnose_cb,this);
     //advertise a service for clearing the costmaps
     clear_costmaps_srv_ = private_nh.advertiseService("clear_costmaps", &MoveBase::clearCostmapsService, this);
 
@@ -820,6 +821,34 @@ namespace move_base {
       if(i >= 7)
       {
       	Goal_reached = false;
+        i = 0;
+      }
+      return true;
+  }
+
+  bool MoveBase::navi_diagnose_cb(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res)
+  {
+    res.code = 0;
+     static int i=0;
+     i = i+1;
+      res.IsError = IsError;
+      res.GoalReach = Goal_reached;
+      if(IsError == false && Goal_reached == true)
+      {
+	res.info = "No Error, goal reached";
+      }
+      if(IsError == true && Goal_reached == false) 
+      {
+        res.info ="Error! Goal will not be reached";
+	res.code = 1;
+      }
+      if(IsError == false && Goal_reached == false)
+      {
+         res.info="No Error, goal not have been reached";
+      }
+      if(i >= 7)
+      {
+        IsError = false;
         i = 0;
       }
       return true;

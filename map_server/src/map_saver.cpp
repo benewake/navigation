@@ -36,7 +36,7 @@
 #include "geometry_msgs/Quaternion.h"
 
 using namespace std;
-
+ 
 /**
  * @brief Map generation node.
  */
@@ -73,9 +73,9 @@ class MapGenerator
       for(unsigned int y = 0; y < map->info.height; y++) {
         for(unsigned int x = 0; x < map->info.width; x++) {
           unsigned int i = x + (map->info.height - y - 1) * map->info.width;
-          if (map->data[i] == 0) { //occ [0,0.1)
+          if (map->data[i] <=45 && map->data[i]> -1) { //occ [0,0.1)
             fputc(254, out);
-          } else if (map->data[i] == +100) { //occ (0.65,1]
+          } else if (map->data[i] >= 70) { //occ (0.65,1]
             fputc(000, out);
           } else { //occ [0.1,0.65]
             fputc(205, out);

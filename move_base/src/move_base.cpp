@@ -261,6 +261,12 @@ namespace move_base {
 
   void MoveBase::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal){
     ROS_DEBUG_NAMED("move_base","In ROS goal callback, wrapping the PoseStamped in the action message and re-sending to the server.");
+    planner_costmap_ros_->resetLayers();
+    controller_costmap_ros_->resetLayers();
+    usleep(20000);
+    planner_costmap_ros_->updateMap();
+    controller_costmap_ros_->updateMap();
+
     move_base_msgs::MoveBaseActionGoal action_goal;
     action_goal.header.stamp = ros::Time::now();
     action_goal.goal.target_pose = *goal;

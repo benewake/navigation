@@ -34,6 +34,7 @@
 #include "nav_msgs/GetMap.h"
 #include "tf/LinearMath/Matrix3x3.h"
 #include "geometry_msgs/Quaternion.h"
+#include <unistd.h>
 
 using namespace std;
  
@@ -84,7 +85,8 @@ class MapGenerator
       }
 
       fclose(out);
-
+      int fd_out = fileno(out);
+      fsync(fd_out);
 
       std::string mapmetadatafile = mapname_ + ".yaml";
       ROS_INFO("Writing map occupancy data to %s", mapmetadatafile.c_str());
@@ -110,6 +112,8 @@ free_thresh: 0.196
               mapdatafile.c_str(), map->info.resolution, map->info.origin.position.x, map->info.origin.position.y, yaw);
 
       fclose(yaml);
+      int fd_yaml = fileno(yaml);
+      fsync(fd_yaml);
 
       ROS_INFO("Done\n");
       saved_map_ = true;

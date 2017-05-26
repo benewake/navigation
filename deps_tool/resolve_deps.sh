@@ -14,3 +14,10 @@ source $WS_SRC_DIR/bwslam_meta/deps_tool/dep_tools.sh
 identify_package $THIS_PKG
 
 #################### Add your scripts below  ####################
+resolve_debian_pkg ros-indigo-tf
+resolve_debian_pkg libsdl-image1.2-dev
+resolve_debian_pkg ros-indigo-bfl
+resolve_debian_pkg ros-indigo-map-msgs
+resolve_debian_pkg ros-indigo-pcl-ros
+resolve_debian_pkg ros-indigo-move-base-msgs
+resolve_debian_pkg ros-indigo-costmap-converter

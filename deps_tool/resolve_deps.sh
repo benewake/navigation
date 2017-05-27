@@ -17,7 +17,5 @@ identify_package $THIS_PKG
 resolve_debian_pkg ros-indigo-tf
 resolve_debian_pkg libsdl-image1.2-dev
 resolve_debian_pkg ros-indigo-bfl
-resolve_debian_pkg ros-indigo-map-msgs
 resolve_debian_pkg ros-indigo-pcl-ros
-resolve_debian_pkg ros-indigo-move-base-msgs
 resolve_debian_pkg ros-indigo-costmap-converter

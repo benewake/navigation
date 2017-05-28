@@ -37,12 +37,9 @@
 *********************************************************************/
 #include <move_base/move_base.h>
 #include <cmath>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/thread.hpp>
-
 #include <geometry_msgs/Twist.h>
-
 namespace move_base {
 
   MoveBase::MoveBase(tf::TransformListener& tf) :
@@ -86,6 +83,7 @@ namespace move_base {
 
     //for comanding the base
     vel_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
+
     current_goal_pub_ = private_nh.advertise<geometry_msgs::PoseStamped>("current_goal", 0 );
 
     ros::NodeHandle action_nh("move_base");
@@ -96,7 +94,9 @@ namespace move_base {
     //like nav_view and rviz
     ros::NodeHandle simple_nh("move_base_simple");
     goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&MoveBase::goalCB, this, _1));
-
+    
+    IsError = false;
+    Goal_reached = false;
     //we'll assume the radius of the robot to be consistent with what's specified for the costmaps
     private_nh.param("local_costmap/inscribed_radius", inscribed_radius_, 0.325);
     private_nh.param("local_costmap/circumscribed_radius", circumscribed_radius_, 0.46);
@@ -124,6 +124,10 @@ namespace move_base {
     controller_costmap_ros_ = new costmap_2d::Costmap2DROS("local_costmap", tf_);
     controller_costmap_ros_->pause();
 
+    costmap_ros = planner_costmap_ros_;
+    costmap = costmap_ros -> getCostmap();
+    world_model = new base_local_planner::CostmapModel(*costmap);
+
     //create a local planner
     try {
       tc_ = blp_loader_.createInstance(local_planner);
@@ -141,6 +145,7 @@ namespace move_base {
     //advertise a service for getting a plan
     make_plan_srv_ = private_nh.advertiseService("make_plan", &MoveBase::planService, this);
 
+    service = nh.advertiseService("NaviStatus",&MoveBase::goal_reached,this);
     //advertise a service for clearing the costmaps
     clear_costmaps_srv_ = private_nh.advertiseService("clear_costmaps", &MoveBase::clearCostmapsService, this);
 
@@ -261,16 +266,26 @@ namespace move_base {
 
   void MoveBase::goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal){
     ROS_DEBUG_NAMED("move_base","In ROS goal callback, wrapping the PoseStamped in the action message and re-sending to the server.");
-    planner_costmap_ros_->resetLayers();
-    controller_costmap_ros_->resetLayers();
-    usleep(20000);
-    planner_costmap_ros_->updateMap();
-    controller_costmap_ros_->updateMap();
-
     move_base_msgs::MoveBaseActionGoal action_goal;
     action_goal.header.stamp = ros::Time::now();
     action_goal.goal.target_pose = *goal;
-
+    int i ;
+    Goal_reached = false;
+    geometry_msgs::Point point;
+    point.x = goal -> pose.position.x;
+    point.y = goal -> pose.position.y;
+    float robot_radius = 0.25;
+    std::vector<geometry_msgs::Point> footprint;
+    footprint.push_back(point);
+    double point_cost = world_model -> footprintCost(point,footprint,robot_radius,robot_radius);
+    ROS_ERROR("The cost of goal is: %lf",point_cost);
+    if(point_cost < 0)
+    {
+        ROS_ERROR("The point you have been chosen is unreachable!");
+        IsError = true;
+        return;
+    }
+    IsError = false;
     action_goal_pub_.publish(action_goal);
   }
 
@@ -461,6 +476,9 @@ namespace move_base {
     //since this gets called on handle activate
     if(planner_costmap_ros_ == NULL) {
       ROS_ERROR("Planner costmap ROS is NULL, unable to create global plan");
+      //std_msgs::String msg;
+      //msg.data = "The costmap ROS is NULL, unable to create global plan";
+      //error_pub.publish(msg);
       return false;
     }
 
@@ -468,6 +486,9 @@ namespace move_base {
     tf::Stamped<tf::Pose> global_pose;
     if(!planner_costmap_ros_->getRobotPose(global_pose)) {
       ROS_WARN("Unable to get starting pose of robot, unable to create global plan");
+      //std_msgs::String msg;
+      //msg.data = "Unable to get starting pose of robot";
+      //error_pub.publish(msg);
       return false;
     }
 
@@ -477,6 +498,9 @@ namespace move_base {
     //if the planner fails or returns a zero length plan, planning failed
     if(!planner_->makePlan(start, goal, plan) || plan.empty()){
       ROS_DEBUG_NAMED("move_base","Failed to find a  plan to point (%.2f, %.2f)", goal.pose.position.x, goal.pose.position.y);
+      std_msgs::String msg;
+      //msg.data = "Failed to find a plan";
+      //error_pub.publish(msg);
       return false;
     }
 
@@ -773,6 +797,25 @@ namespace move_base {
     return hypot(p1.pose.position.x - p2.pose.position.x, p1.pose.position.y - p2.pose.position.y);
   }
 
+  bool MoveBase::goal_reached(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res)
+  {
+      res.IsError = IsError;
+      res.GoalReach = Goal_reached;
+      if(IsError == false && Goal_reached == true)
+      {
+	res.info = "No Error, goal reached";
+      }
+      if(IsError == true && Goal_reached == false) 
+      {
+        res.info ="Error! Goal will not be reached";
+      }
+      if(IsError == false && Goal_reached == false)
+      {
+         res.info="No Error, goal not have been reached";
+      }
+      return true;
+  }
+
   bool MoveBase::executeCycle(geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& global_plan){
     boost::recursive_mutex::scoped_lock ecl(configuration_mutex_);
     //we need to be able to publish velocity commands
@@ -868,6 +911,7 @@ namespace move_base {
           runPlanner_ = false;
           lock.unlock();
 
+          Goal_reached = true;
           as_->setSucceeded(move_base_msgs::MoveBaseResult(), "Goal reached.");
           return true;
         }

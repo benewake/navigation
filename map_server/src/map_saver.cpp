@@ -35,9 +35,8 @@
 #include "tf/LinearMath/Matrix3x3.h"
 #include "geometry_msgs/Quaternion.h"
 #include <unistd.h>
-
 using namespace std;
- 
+
 /**
  * @brief Map generation node.
  */
@@ -74,7 +73,7 @@ class MapGenerator
       for(unsigned int y = 0; y < map->info.height; y++) {
         for(unsigned int x = 0; x < map->info.width; x++) {
           unsigned int i = x + (map->info.height - y - 1) * map->info.width;
-          if (map->data[i] <=45 && map->data[i]> -1) { //occ [0,0.1)
+          if (map->data[i] <= 45 && map->data[i]>-1) { //occ [0,0.1)
             fputc(254, out);
           } else if (map->data[i] >= 70) { //occ (0.65,1]
             fputc(000, out);
@@ -85,6 +84,7 @@ class MapGenerator
       }
 
       fclose(out);
+      
       int fd_out = fileno(out);
       fsync(fd_out);
 
@@ -112,6 +112,7 @@ free_thresh: 0.196
               mapdatafile.c_str(), map->info.resolution, map->info.origin.position.x, map->info.origin.position.y, yaw);
 
       fclose(yaml);
+
       int fd_yaml = fileno(yaml);
       fsync(fd_yaml);
 

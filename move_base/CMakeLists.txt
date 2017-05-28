@@ -7,6 +7,7 @@ find_package(catkin REQUIRED
         roscpp
         pluginlib
         actionlib
+        base_local_planner
         dynamic_reconfigure
         message_generation
         move_base_msgs
@@ -27,6 +28,7 @@ catkin_package(
         roscpp
         dynamic_reconfigure
 )
+
 
 include_directories(
     include

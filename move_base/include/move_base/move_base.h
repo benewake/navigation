@@ -44,7 +44,8 @@
 
 #include <actionlib/server/simple_action_server.h>
 #include <move_base_msgs/MoveBaseAction.h>
-
+#include <base_local_planner/world_model.h>
+#include <base_local_planner/costmap_model.h>
 #include <nav_core/base_local_planner.h>
 #include <nav_core/base_global_planner.h>
 #include <nav_core/recovery_behavior.h>
@@ -53,12 +54,17 @@
 #include <costmap_2d/costmap_2d.h>
 #include <nav_msgs/GetPlan.h>
 
+#include <std_msgs/Int8.h>
+#include <std_msgs/String.h>
 #include <pluginlib/class_loader.h>
 #include <std_srvs/Empty.h>
 
 #include <dynamic_reconfigure/server.h>
 #include "move_base/MoveBaseConfig.h"
 
+//#include <move_base_msgs/Diagnose.h>
+#include <move_base_msgs/NaviStatus.h>
+#include <std_srvs/Trigger.h>
 namespace move_base {
   //typedefs to help us out with the action server so that we don't hace to type so much
   typedef actionlib::SimpleActionServer<move_base_msgs::MoveBaseAction> MoveBaseActionServer;
@@ -127,6 +133,8 @@ namespace move_base {
        */
       bool makePlan(const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan);
 
+      bool goal_reached(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res);
+      bool Goal_reached;
       /**
        * @brief  Load the recovery behaviors for the navigation stack from the parameter server
        * @param node The ros::NodeHandle to be used for loading parameters 
@@ -157,6 +165,11 @@ namespace move_base {
       void resetState();
 
       void goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal);
+
+      /*the new programe for the SCU_050820 the goal valid information for Android*/
+      base_local_planner::WorldModel* world_model;
+      costmap_2d::Costmap2DROS* costmap_ros;
+      costmap_2d::Costmap2D* costmap;
 
       void planThread();
 
@@ -191,6 +204,7 @@ namespace move_base {
       double planner_patience_, controller_patience_;
       double conservative_reset_dist_, clearing_radius_;
       ros::Publisher current_goal_pub_, vel_pub_, action_goal_pub_;
+      ros::Publisher error_pub;
       ros::Subscriber goal_sub_;
       ros::ServiceServer make_plan_srv_, clear_costmaps_srv_;
       bool shutdown_costmaps_, clearing_rotation_allowed_, recovery_behavior_enabled_;
@@ -198,18 +212,21 @@ namespace move_base {
 
       MoveBaseState state_;
       RecoveryTrigger recovery_trigger_;
-
+      
+      bool IsError;
       ros::Time last_valid_plan_, last_valid_control_, last_oscillation_reset_;
       geometry_msgs::PoseStamped oscillation_pose_;
       pluginlib::ClassLoader<nav_core::BaseGlobalPlanner> bgp_loader_;
       pluginlib::ClassLoader<nav_core::BaseLocalPlanner> blp_loader_;
       pluginlib::ClassLoader<nav_core::RecoveryBehavior> recovery_loader_;
 
+      ros::ServiceServer service;
       //set up plan triple buffer
       std::vector<geometry_msgs::PoseStamped>* planner_plan_;
       std::vector<geometry_msgs::PoseStamped>* latest_plan_;
       std::vector<geometry_msgs::PoseStamped>* controller_plan_;
 
+      std_msgs::String ErrorMsg;
       //set up the planner's thread
       bool runPlanner_;
       boost::mutex planner_mutex_;
@@ -217,6 +234,7 @@ namespace move_base {
       geometry_msgs::PoseStamped planner_goal_;
       boost::thread* planner_thread_;
 
+      //std_srvs::Trigger goalFinish;
 
       boost::recursive_mutex configuration_mutex_;
       dynamic_reconfigure::Server<move_base::MoveBaseConfig> *dsrv_;
@@ -228,6 +246,6 @@ namespace move_base {
       bool setup_, p_freq_change_, c_freq_change_;
       bool new_global_plan_;
   };
-};
+}
 #endif
 

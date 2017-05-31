@@ -278,7 +278,7 @@ namespace move_base {
     std::vector<geometry_msgs::Point> footprint;
     footprint.push_back(point);
     double point_cost = world_model -> footprintCost(point,footprint,robot_radius,robot_radius);
-    ROS_ERROR("The cost of goal is: %lf",point_cost);
+    ROS_ERROR("I received th goal\n");
     if(point_cost < 0)
     {
         ROS_ERROR("The point you have been chosen is unreachable!");

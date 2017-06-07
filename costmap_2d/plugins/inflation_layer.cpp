@@ -190,6 +190,11 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
   else if (seen_size_ != size_x * size_y)
   {
     ROS_WARN("InflationLayer::updateCosts(): seen_ array size is wrong");
+    /*f(seen_ != NULL)
+    {
+      delete[] seen_;
+      seen_ = NULL;
+    }*/
     delete[] seen_;
     seen_size_ = size_x * size_y;
     seen_ = new bool[seen_size_];

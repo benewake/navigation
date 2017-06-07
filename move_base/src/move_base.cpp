@@ -41,7 +41,7 @@
 #include <boost/thread.hpp>
 #include <geometry_msgs/Twist.h>
 namespace move_base {
-
+ 
   MoveBase::MoveBase(tf::TransformListener& tf) :
     tf_(tf),
     as_(NULL),
@@ -278,7 +278,7 @@ namespace move_base {
     std::vector<geometry_msgs::Point> footprint;
     footprint.push_back(point);
     double point_cost = world_model -> footprintCost(point,footprint,robot_radius,robot_radius);
-    ROS_ERROR("I received th goal\n");
+    ROS_ERROR("The cost of goal is: %lf",point_cost);
     if(point_cost < 0)
     {
         ROS_ERROR("The point you have been chosen is unreachable!");
@@ -799,6 +799,9 @@ namespace move_base {
 
   bool MoveBase::goal_reached(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res)
   {
+     static int i=0;
+     i = i+1;
+    ROS_INFO("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! %d", Goal_reached);
       res.IsError = IsError;
       res.GoalReach = Goal_reached;
       if(IsError == false && Goal_reached == true)
@@ -812,6 +815,11 @@ namespace move_base {
       if(IsError == false && Goal_reached == false)
       {
          res.info="No Error, goal not have been reached";
+      }
+      if(i >= 10)
+      {
+      	Goal_reached = false;
+        i = 0;
       }
       return true;
   }

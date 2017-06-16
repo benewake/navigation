@@ -64,6 +64,7 @@
 
 //#include <move_base_msgs/Diagnose.h>
 #include <move_base_msgs/NaviStatus.h>
+#include <move_base_msgs/Diagnose.h>
 #include <std_srvs/Trigger.h>
 namespace move_base {
   //typedefs to help us out with the action server so that we don't hace to type so much
@@ -134,6 +135,7 @@ namespace move_base {
       bool makePlan(const geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& plan);
 
       bool goal_reached(move_base_msgs::NaviStatus::Request &req, move_base_msgs::NaviStatus::Response &res);
+
       bool Goal_reached;
       /**
        * @brief  Load the recovery behaviors for the navigation stack from the parameter server
@@ -165,6 +167,7 @@ namespace move_base {
       void resetState();
 
       void goalCB(const geometry_msgs::PoseStamped::ConstPtr& goal);
+      void goalFeedBack(const move_base_msgs::Diagnose::ConstPtr &msg);
 
       /*the new programe for the SCU_050820 the goal valid information for Android*/
       base_local_planner::WorldModel* world_model;
@@ -198,14 +201,16 @@ namespace move_base {
 
       std::vector<boost::shared_ptr<nav_core::RecoveryBehavior> > recovery_behaviors_;
       unsigned int recovery_index_;
+      unsigned int send_id;
 
       tf::Stamped<tf::Pose> global_pose_;
       double planner_frequency_, controller_frequency_, inscribed_radius_, circumscribed_radius_;
       double planner_patience_, controller_patience_;
       double conservative_reset_dist_, clearing_radius_;
       ros::Publisher current_goal_pub_, vel_pub_, action_goal_pub_;
-      ros::Publisher error_pub;
+      ros::Publisher goal_reached_pub;
       ros::Subscriber goal_sub_;
+      ros::Subscriber goal_reached_feedback;
       ros::ServiceServer make_plan_srv_, clear_costmaps_srv_;
       bool shutdown_costmaps_, clearing_rotation_allowed_, recovery_behavior_enabled_;
       double oscillation_timeout_, oscillation_distance_;
@@ -214,6 +219,9 @@ namespace move_base {
       RecoveryTrigger recovery_trigger_;
       
       bool IsError;
+      bool IsGoalFeedBack;
+
+      unsigned int id;
       ros::Time last_valid_plan_, last_valid_control_, last_oscillation_reset_;
       geometry_msgs::PoseStamped oscillation_pose_;
       pluginlib::ClassLoader<nav_core::BaseGlobalPlanner> bgp_loader_;

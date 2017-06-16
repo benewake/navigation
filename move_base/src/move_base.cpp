@@ -84,6 +84,8 @@ namespace move_base {
     //for comanding the base
     vel_pub_ = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
+    goal_reached_pub = nh.advertise<move_base_msgs::Diagnose>("goal_reached",1);
+
     current_goal_pub_ = private_nh.advertise<geometry_msgs::PoseStamped>("current_goal", 0 );
 
     ros::NodeHandle action_nh("move_base");
@@ -94,9 +96,11 @@ namespace move_base {
     //like nav_view and rviz
     ros::NodeHandle simple_nh("move_base_simple");
     goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&MoveBase::goalCB, this, _1));
+    goal_reached_feedback = nh.subscribe<move_base_msgs::Diagnose>("goal_reached_feedback",1,boost::bind(&MoveBase::goalFeedBack,this,_1));
     
     IsError = false;
     Goal_reached = false;
+    IsGoalFeedBack = false;
     //we'll assume the radius of the robot to be consistent with what's specified for the costmaps
     private_nh.param("local_costmap/inscribed_radius", inscribed_radius_, 0.325);
     private_nh.param("local_costmap/circumscribed_radius", circumscribed_radius_, 0.46);
@@ -119,6 +123,9 @@ namespace move_base {
       ROS_FATAL("Failed to create the %s planner, are you sure it is properly registered and that the containing library is built? Exception: %s", global_planner.c_str(), ex.what());
       exit(1);
     }
+
+    id = 1;
+    send_id = 1;
 
     //create the ros wrapper for the controller's costmap... and initializer a pointer we'll use with the underlying map
     controller_costmap_ros_ = new costmap_2d::Costmap2DROS("local_costmap", tf_);
@@ -824,6 +831,18 @@ namespace move_base {
       return true;
   }
 
+  void MoveBase::goalFeedBack(move_base_msgs::Diagnose::ConstPtr &msg){
+      unsigned int sub_id = msg->id;
+      if(send_id != sub_id)
+      {
+          IsGoalFeedBack = false;
+      }
+      else
+      {
+          IsGoalFeedBack = true;
+      }
+
+  }
   bool MoveBase::executeCycle(geometry_msgs::PoseStamped& goal, std::vector<geometry_msgs::PoseStamped>& global_plan){
     boost::recursive_mutex::scoped_lock ecl(configuration_mutex_);
     //we need to be able to publish velocity commands
@@ -919,8 +938,28 @@ namespace move_base {
           runPlanner_ = false;
           lock.unlock();
 
+          move_base_msgs::Diagnose reached_msg;
+          int count=0;
           Goal_reached = true;
+          reached_msg.id = id;
+          reached_msg.status = Goal_reached;
+          send_id = id;
+
+          while(IsGoalFeedBack != true)
+          {
+              goal_reached_pub.publish(reached_msg);
+              sleep(1);
+              count++;
+              if(count >= 10)
+              {
+                  ROS_ERROR("Time out! I have not received any feedback");
+                  break;
+              }
+          }
+
           as_->setSucceeded(move_base_msgs::MoveBaseResult(), "Goal reached.");
+          IsGoalFeedBack = false;
+          id++;
           return true;
         }
 

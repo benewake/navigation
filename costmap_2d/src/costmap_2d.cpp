@@ -78,10 +78,12 @@ void Costmap2D::resizeMap(unsigned int size_x, unsigned int size_y, double resol
   origin_x_ = origin_x;
   origin_y_ = origin_y;
 
-  initMaps(size_x, size_y);
-
+  //initMaps(size_x, size_y);
+  delete[] costmap_;
+  costmap_ = new unsigned char[size_x * size_y];
+  memset(costmap_, default_value_, size_x_ * size_y_ * sizeof(unsigned char));
   // reset our maps to have no information
-  resetMaps();
+  //resetMaps();
 }
 
 void Costmap2D::resetMaps()

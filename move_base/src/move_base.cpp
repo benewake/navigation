@@ -284,7 +284,7 @@ namespace move_base {
     {
         ROS_ERROR("The point you have been chosen is unreachable!");
         IsError = true;
-        return;
+        //return;
     }
     IsError = false;
     action_goal_pub_.publish(action_goal);

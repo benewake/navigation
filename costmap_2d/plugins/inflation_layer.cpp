@@ -195,7 +195,7 @@ void InflationLayer::updateCosts(costmap_2d::Costmap2D& master_grid, int min_i, 
       delete[] seen_;
       seen_ = NULL;
     }*/
-    //delete[] seen_;
+    delete[] seen_;
     seen_size_ = size_x * size_y;
     seen_ = new bool[seen_size_];
   }

@@ -31,6 +31,8 @@
     <build_depend>std_srvs</build_depend>
     <build_depend>tf</build_depend>
     <build_depend>visualization_msgs</build_depend>
+    <build_depend>bwslam-sdk</build_depend>
+    <build_depend>tankom</build_depend>
 
     <!--These deps aren't strictly needed, but given the default parameters require them to work, we'll enforce that they build -->
     <build_depend>base_local_planner</build_depend>
@@ -59,5 +61,6 @@
     <run_depend>std_srvs</run_depend>
     <run_depend>tf</run_depend>
     <run_depend>visualization_msgs</run_depend>
-
+    <run_depend>bwslam-sdk</run_depend>
+    <run_depend>tankom</run_depend>
 </package>

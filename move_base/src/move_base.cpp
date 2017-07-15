@@ -40,6 +40,13 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/thread.hpp>
 #include <geometry_msgs/Twist.h>
+#include "bwslam-api/navigation_message.h"
+
+#include "bwslam-api/navigation_message.h"
+#include "tankom/basket.h"
+using namespace bwslam;
+using namespace tankom;
+
 namespace move_base {
  
   MoveBase::MoveBase(tf::TransformListener& tf) :
@@ -652,6 +659,10 @@ namespace move_base {
 
   void MoveBase::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move_base_goal)
   {
+	  Basket basket("navigation");
+	  NavigationMessage msg;
+	  msg.set_goal_status(reached);
+	  basket.drop(msg);
     if(!isQuaternionValid(move_base_goal->target_pose.pose.orientation)){
       as_->setAborted(move_base_msgs::MoveBaseResult(), "Aborting on goal because it was sent with an invalid quaternion");
       return;
@@ -950,6 +961,10 @@ namespace move_base {
           lock.unlock();
 
           Goal_reached = true;
+	  Basket basket("navigation");
+	  NavigationMessage msg;
+	  msg.set_goal_status(reached);
+	  basket.drop(msg);
           as_->setSucceeded(move_base_msgs::MoveBaseResult(), "Goal reached.");
           return true;
         }

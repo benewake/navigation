@@ -16,6 +16,10 @@ find_package(catkin REQUIRED
         tf
 )
 find_package(Eigen3 REQUIRED)
+
+find_package(bwslam-sdk REQUIRED)
+find_package(tankom REQUIRED)
+
 add_definitions(${EIGEN3_DEFINITIONS})
 
 # dynamic reconfigure
@@ -43,6 +47,8 @@ add_library(move_base
 target_link_libraries(move_base
     ${Boost_LIBRARIES}
     ${catkin_LIBRARIES}
+    ${BWSLAM-SDK_LIBRARIES}
+    ${TANKOM_LIBRARIES}
     )
 add_dependencies(move_base move_base_gencfg)
 add_dependencies(move_base geometry_msgs_generate_messages_cpp)

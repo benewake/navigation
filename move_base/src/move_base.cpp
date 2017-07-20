@@ -818,6 +818,11 @@ namespace move_base {
       {
          res.info="No Error, goal not have been reached";
       }
+      if(isTimeout == true)
+      {
+          res.info="I can't reach the goal, maybe I am stucking";
+          isTimeout = false;
+      }
       if(i >= 7)
       {
       	Goal_reached = false;
@@ -961,6 +966,7 @@ namespace move_base {
           publishZeroVelocity();
           state_ = CLEARING;
           recovery_trigger_ = OSCILLATION_R;
+          isTimeout = true;
         }
         
         {

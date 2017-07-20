@@ -659,10 +659,10 @@ namespace move_base {
 
   void MoveBase::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move_base_goal)
   {
-	  Basket basket("navigation");
-	  NavigationMessage msg;
-	  msg.set_goal_status(reached);
-	  basket.drop(msg);
+    Basket basket("navigation");
+    NavigationMessage msg;
+    msg.set_goal_status(ongoing);
+    basket.drop(msg);
     if(!isQuaternionValid(move_base_goal->target_pose.pose.orientation)){
       as_->setAborted(move_base_msgs::MoveBaseResult(), "Aborting on goal because it was sent with an invalid quaternion");
       return;

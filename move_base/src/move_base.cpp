@@ -838,7 +838,7 @@ namespace move_base {
       if(IsError == false && Goal_reached == false)
       {
          res.info="No Error, goal not have been reached";
-         res.code = 2;
+         //res.code = 2;
       }
       if(isTimeout == true)
       {
@@ -992,6 +992,9 @@ namespace move_base {
           state_ = CLEARING;
           recovery_trigger_ = OSCILLATION_R;
           isTimeout = true;
+	  NaviDiagnose diagnose(2, "I can't reach the goal, maybe I am stucking");
+	  Basket basket("navi_diagnose");
+	  basket.drop(diagnose);
           ROS_ERROR("The robot can not move to the goal stuck into csillation status!\n");
         }
         

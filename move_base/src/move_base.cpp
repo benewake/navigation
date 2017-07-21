@@ -817,6 +817,7 @@ namespace move_base {
       if(IsError == false && Goal_reached == false)
       {
          res.info="No Error, goal not have been reached";
+         res.code = 2;
       }
       if(isTimeout == true)
       {

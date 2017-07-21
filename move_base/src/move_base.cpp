@@ -968,6 +968,7 @@ namespace move_base {
           state_ = CLEARING;
           recovery_trigger_ = OSCILLATION_R;
           isTimeout = true;
+          ROS_ERROR("The robot can not move to the goal stuck into csillation status!\n")
         }
         
         {

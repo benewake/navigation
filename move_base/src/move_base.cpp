@@ -103,6 +103,10 @@ namespace move_base {
     goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&MoveBase::goalCB, this, _1));
     
     IsError = false;
+    Basket basket("navi_diagnose");
+    NaviDiagnose diagnose(0, "");
+    basket.drop(diagnose);
+
     Goal_reached = false;
     //we'll assume the radius of the robot to be consistent with what's specified for the costmaps
     private_nh.param("local_costmap/inscribed_radius", inscribed_radius_, 0.325);
@@ -291,9 +295,16 @@ namespace move_base {
     {
         ROS_ERROR("The point you have been chosen is unreachable!");
         IsError = true;
+	Basket basket("navi_diagnose");
+	NaviDiagnose diagnose(1, "Set a unreachable navigation goal");
+	basket.drop(diagnose);
         //return;
+    } else {
+      IsError = false;
+      Basket basket("navi_diagnose");
+      NaviDiagnose diagnose(0, "");
+      basket.drop(diagnose);
     }
-    IsError = false;
     action_goal_pub_.publish(action_goal);
   }
 
@@ -659,10 +670,9 @@ namespace move_base {
 
   void MoveBase::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move_base_goal)
   {
-    Basket basket("navigation");
-    NavigationMessage msg;
-    msg.set_goal_status(ongoing);
-    basket.drop(msg);
+    Basket basket("goal_status");
+    GoalStatus goal_status(ongoing);
+    basket.drop(goal_status);
     if(!isQuaternionValid(move_base_goal->target_pose.pose.orientation)){
       as_->setAborted(move_base_msgs::MoveBaseResult(), "Aborting on goal because it was sent with an invalid quaternion");
       return;
@@ -961,10 +971,9 @@ namespace move_base {
           lock.unlock();
 
           Goal_reached = true;
-	  Basket basket("navigation");
-	  NavigationMessage msg;
-	  msg.set_goal_status(reached);
-	  basket.drop(msg);
+	  Basket basket("goal_status");
+	  GoalStatus goal_status(reached);
+	  basket.drop(goal_status);
           as_->setSucceeded(move_base_msgs::MoveBaseResult(), "Goal reached.");
           return true;
         }

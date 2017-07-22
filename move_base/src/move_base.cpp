@@ -846,6 +846,7 @@ namespace move_base {
       if(isTimeout == true)
       {
           res.info="I can't reach the goal, maybe I am stucking";
+	  res.code = 2;
           isTimeout = false;
       }
       if(i >= 7)

@@ -59,8 +59,8 @@ namespace move_base {
     planner_plan_(NULL), latest_plan_(NULL), controller_plan_(NULL),
     runPlanner_(false), setup_(false), p_freq_change_(false), c_freq_change_(false), new_global_plan_(false) {
 
-    Basket("navi_diagnose", reset);
-    Basket("goal_status", reset);
+    // Basket("navi_diagnose", reset);
+    // Basket("goal_status", reset);
 
     as_ = new MoveBaseActionServer(ros::NodeHandle(), "move_base", boost::bind(&MoveBase::executeCb, this, _1), false);
 
@@ -106,9 +106,9 @@ namespace move_base {
     goal_sub_ = simple_nh.subscribe<geometry_msgs::PoseStamped>("goal", 1, boost::bind(&MoveBase::goalCB, this, _1));
     
     IsError = false;
-    Basket basket("navi_diagnose");
-    NaviDiagnose diagnose(0, "");
-    basket.drop(diagnose);
+    // Basket basket("navi_diagnose");
+    // NaviDiagnose diagnose(0, "");
+    // basket.drop(diagnose);
 
     Goal_reached = false;
     //we'll assume the radius of the robot to be consistent with what's specified for the costmaps
@@ -298,15 +298,15 @@ namespace move_base {
     {
         ROS_ERROR("The point you have been chosen is unreachable!");
         IsError = true;
-	Basket basket("navi_diagnose");
-	NaviDiagnose diagnose(1, "Set a unreachable navigation goal");
-	basket.drop(diagnose);
+	// Basket basket("navi_diagnose");
+	// NaviDiagnose diagnose(1, "Set a unreachable navigation goal");
+	// basket.drop(diagnose);
         //return;
     } else {
       IsError = false;
-      Basket basket("navi_diagnose");
-      NaviDiagnose diagnose(0, "");
-      basket.drop(diagnose);
+      // Basket basket("navi_diagnose");
+      // NaviDiagnose diagnose(0, "");
+      // basket.drop(diagnose);
     }
     action_goal_pub_.publish(action_goal);
   }
@@ -673,9 +673,9 @@ namespace move_base {
 
   void MoveBase::executeCb(const move_base_msgs::MoveBaseGoalConstPtr& move_base_goal)
   {
-    Basket basket("goal_status");
-    GoalStatus goal_status(ongoing);
-    basket.drop(goal_status);
+    // Basket basket("goal_status");
+    // GoalStatus goal_status(ongoing);
+    // basket.drop(goal_status);
     if(!isQuaternionValid(move_base_goal->target_pose.pose.orientation)){
       as_->setAborted(move_base_msgs::MoveBaseResult(), "Aborting on goal because it was sent with an invalid quaternion");
       return;
@@ -980,9 +980,9 @@ namespace move_base {
           lock.unlock();
 
           Goal_reached = true;
-	  Basket basket("goal_status");
-	  GoalStatus goal_status(reached);
-	  basket.drop(goal_status);
+	  // Basket basket("goal_status");
+	  // GoalStatus goal_status(reached);
+	  // basket.drop(goal_status);
           as_->setSucceeded(move_base_msgs::MoveBaseResult(), "Goal reached.");
           return true;
         }
@@ -995,9 +995,9 @@ namespace move_base {
           state_ = CLEARING;
           recovery_trigger_ = OSCILLATION_R;
           isTimeout = true;
-	  NaviDiagnose diagnose(2, "I can't reach the goal, maybe I am stucking");
-	  Basket basket("navi_diagnose");
-	  basket.drop(diagnose);
+	  // NaviDiagnose diagnose(2, "I can't reach the goal, maybe I am stucking");
+	  // Basket basket("navi_diagnose");
+	  // basket.drop(diagnose);
           ROS_ERROR("The robot can not move to the goal stuck into csillation status!\n");
         }
         

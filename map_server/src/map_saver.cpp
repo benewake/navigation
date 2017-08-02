@@ -83,10 +83,12 @@ class MapGenerator
         }
       }
 
-      fclose(out);
+      fflush(out);
       
       int fd_out = fileno(out);
       fsync(fd_out);
+      
+      fclose(out);
 
       std::string mapmetadatafile = mapname_ + ".yaml";
       ROS_INFO("Writing map occupancy data to %s", mapmetadatafile.c_str());

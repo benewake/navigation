@@ -39,7 +39,7 @@
 #include <tf/transform_listener.h>
 #include <costmap_2d/cost_values.h>
 #include <costmap_2d/costmap_2d.h>
-
+ 
 #include <pcl_conversions/pcl_conversions.h>
 
 //register this planner as a BaseGlobalPlanner plugin
@@ -78,7 +78,7 @@ namespace navfn {
       if(visualize_potential_)
         potarr_pub_.advertise(private_nh, "potential", 1);
 
-      private_nh.param("allow_unknown", allow_unknown_, true);
+      private_nh.param("allow_unknown", allow_unknown_, false);
       private_nh.param("planner_window_x", planner_window_x_, 0.0);
       private_nh.param("planner_window_y", planner_window_y_, 0.0);
       private_nh.param("default_tolerance", default_tolerance_, 0.0);

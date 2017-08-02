@@ -72,6 +72,7 @@ void Costmap2D::initMaps(unsigned int size_x, unsigned int size_y)
 void Costmap2D::resizeMap(unsigned int size_x, unsigned int size_y, double resolution,
                           double origin_x, double origin_y)
 {
+  boost::unique_lock<mutex_t> lock(*access_);
   size_x_ = size_x;
   size_y_ = size_y;
   resolution_ = resolution;
